@@ -1,67 +1,71 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Relatórios</h1>
-
-{% if not has_predictions %}
-    <div class="alert alert-warning">
-        Não há dados suficientes para gerar previsões. Continue registrando vendas para obter relatórios detalhados.
-    </div>
-{% else %}
-    {% for product, stats in product_statistics.items() %}
-        <h2>{{ product }}</h2>
-        {% if stats.needs_more_data %}
-            <div class="alert alert-info">
-                Dados insuficientes para previsões precisas. Continue registrando vendas para este produto.
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Relatório de Vendas e Previsões por Produto</h1>
+    
+    <!-- Resumo Geral -->
+    <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Resumo dos Produtos</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for product_name, stats in product_statistics.items() %}
+            <div class="border rounded-lg p-4">
+                <h3 class="font-bold text-lg mb-2">{{ product_name }}</h3>
+                <ul class="space-y-2">
+                    <li>Total de Vendas: {{ stats.total_sales }}</li>
+                    <li>Quantidade Total Vendida: {{ stats.total_quantity }}</li>
+                    <li>Média por Venda: {{ stats.average_quantity }}</li>
+                    {% if not stats.needs_more_data %}
+                        <li>Previsão próximos 30 dias: {{ stats.predicted_next_30_days }}</li>
+                        <li>Média diária prevista: {{ stats.average_predicted_daily }}</li>
+                        <li>Precisão do modelo: {{ stats.model_accuracy }}%</li>
+                    {% else %}
+                        <li class="text-yellow-600">Necessita mais dados (mínimo 30 vendas)</li>
+                    {% endif %}
+                </ul>
             </div>
-        {% else %}
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Estatísticas</h5>
-                    <p>Total de vendas: {{ stats.total_sales }}</p>
-                    <p>Quantidade total vendida: {{ stats.total_quantity }}</p>
-                    <p>Quantidade média por venda: {{ stats.average_quantity }}</p>
-                    <p>Previsão para os próximos 30 dias: {{ stats.predicted_next_30_days }}</p>
-                    <p>Média diária prevista: {{ stats.average_predicted_daily }}</p>
-                    <p>Precisão do modelo: {{ stats.model_accuracy }}%</p>
-                </div>
-            </div>
-
-            <h3>Previsões para os próximos 30 dias</h3>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Vendas Previstas</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for prediction in product_predictions[product]['predictions'] %}
-                    <tr>
-                        <td>{{ prediction.date }}</td>
-                        <td>{{ prediction.predicted_sales }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% endif %}
-    {% endfor %}
-{% endif %}
-
-<h2>Registrar Venda</h2>
-<form method="POST" action="{{ url_for('reports.record_sale') }}">
-    <div class="mb-3">
-        <label for="item_id" class="form-label">Produto</label>
-        <select class="form-select" id="item_id" name="item_id" required>
-            {% for product in product_statistics.keys() %}
-            <option value="{{ loop.index }}">{{ product }}</option>
             {% endfor %}
-        </select>
+        </div>
     </div>
-    <div class="mb-3">
-        <label for="quantity" class="form-label">Quantidade</label>
-        <input type="number" class="form-control" id="quantity" name="quantity" required min="1">
-    </div>
-    <button type="submit" class="btn btn-primary">Registrar Venda</button>
-</form>
+
+    <!-- Seção de Previsões Detalhadas -->
+    {% if has_predictions %}
+        {% for product_name, prediction_data in product_predictions.items() %}
+        <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Previsões para {{ product_name }}</h2>
+            
+            <!-- Performance do Modelo -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium mb-2">Performance do Modelo</h3>
+                <p>Score de Treino: {{ prediction_data.train_score }}</p>
+                <p>Score de Teste: {{ prediction_data.test_score }}</p>
+            </div>
+
+            <!-- Tabela de Previsões -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto">
+                    <thead>
+                        <tr class="bg-gray-100">
+                            <th class="px-4 py-2">Data</th>
+                            <th class="px-4 py-2">Vendas Previstas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prediction in prediction_data.predictions %}
+                        <tr class="{% if loop.index % 2 == 0 %}bg-gray-50{% endif %}">
+                            <td class="border px-4 py-2">{{ prediction.date }}</td>
+                            <td class="border px-4 py-2">{{ prediction.predicted_sales }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
+            <p>Nenhum produto tem dados suficientes para previsões (mínimo 30 vendas por produto).</p>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}
