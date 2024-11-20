@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Relatórios</h1>
+
+{% if not has_predictions %}
+    <div class="alert alert-warning">
+        Não há dados suficientes para gerar previsões. Continue registrando vendas para obter relatórios detalhados.
+    </div>
+{% else %}
+    {% for product, stats in product_statistics.items() %}
+        <h2>{{ product }}</h2>
+        {% if stats.needs_more_data %}
+            <div class="alert alert-info">
+                Dados insuficientes para previsões precisas. Continue registrando vendas para este produto.
+            </div>
+        {% else %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Estatísticas</h5>
+                    <p>Total de vendas: {{ stats.total_sales }}</p>
+                    <p>Quantidade total vendida: {{ stats.total_quantity }}</p>
+                    <p>Quantidade média por venda: {{ stats.average_quantity }}</p>
+                    <p>Previsão para os próximos 30 dias: {{ stats.predicted_next_30_days }}</p>
+                    <p>Média diária prevista: {{ stats.average_predicted_daily }}</p>
+                    <p>Precisão do modelo: {{ stats.model_accuracy }}%</p>
+                </div>
+            </div>
+
+            <h3>Previsões para os próximos 30 dias</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Vendas Previstas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prediction in product_predictions[product]['predictions'] %}
+                    <tr>
+                        <td>{{ prediction.date }}</td>
+                        <td>{{ prediction.predicted_sales }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+<h2>Registrar Venda</h2>
+<form method="POST" action="{{ url_for('reports.record_sale') }}">
+    <div class="mb-3">
+        <label for="item_id" class="form-label">Produto</label>
+        <select class="form-select" id="item_id" name="item_id" required>
+            {% for product in product_statistics.keys() %}
+            <option value="{{ loop.index }}">{{ product }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="quantity" class="form-label">Quantidade</label>
+        <input type="number" class="form-control" id="quantity" name="quantity" required min="1">
+    </div>
+    <button type="submit" class="btn btn-primary">Registrar Venda</button>
+</form>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Adicionar Item</h1>
+<form method="POST">
+    <div class="mb-3">
+        <label for="name" class="form-label">Nome</label>
+        <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label">Descrição</label>
+        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="quantity" class="form-label">Quantidade</label>
+        <input type="number" class="form-control" id="quantity" name="quantity" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Adicionar</button>
+</form>
+{% endblock %}

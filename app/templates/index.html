@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Inventário</h1>
+<a href="{{ url_for('inventory.add') }}" class="btn btn-primary mb-3">Adicionar Item</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th>Quantidade</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.description }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>
+                <a href="{{ url_for('inventory.edit', id=item.id) }}" class="btn btn-sm btn-warning">Editar</a>
+                <a href="{{ url_for('inventory.delete', id=item.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este item?')">Excluir</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
