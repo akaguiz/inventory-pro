@@ -98,7 +98,7 @@ def show_reports():
         has_predictions=bool(product_predictions)
     )
 
-@reports.route('/record_sale', methods=['POST'])
+@reports.route('/record_sale', methods=['GET'])
 @login_required
 def record_sale():
     try:
